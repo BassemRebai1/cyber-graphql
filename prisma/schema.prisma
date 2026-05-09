@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum StudentLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CyberCategory {
+  WEB_SECURITY
+  CRYPTOGRAPHY
+  FORENSICS
+  REVERSE_ENGINEERING
+  OSINT
+  BLUE_TEAM
+  CLOUD_SECURITY
+  NETWORK_SECURITY
+}
+
+enum ChallengeDifficulty {
+  EASY
+  MEDIUM
+  HARD
+  INSANE
+}
+
+enum EventType {
+  CTF
+  WORKSHOP
+  CONFERENCE
+  BOOTCAMP
+  MEETUP
+}
+
+enum ResourceLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model Student {
+  id         String    @id @default(cuid())
+  fullName   String
+  email      String    @unique
+  level      StudentLevel
+  interests  String[]
+  teamId     String?
+  team       Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  writeups   Writeup[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Team {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String
+  members     Student[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model CyberEvent {
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  location    String
+  startDate   DateTime
+  endDate     DateTime
+  type        EventType
+  challenges  Challenge[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Challenge {
+  id          String              @id @default(cuid())
+  title       String
+  description String
+  category    CyberCategory
+  difficulty  ChallengeDifficulty
+  points      Int
+  eventId     String?
+  event       CyberEvent?         @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  writeups    Writeup[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model Writeup {
+  id          String    @id @default(cuid())
+  title       String
+  content     String
+  authorId    String
+  challengeId String
+  author      Student   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model LearningResource {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  url         String
+  category    CyberCategory
+  level       ResourceLevel
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
